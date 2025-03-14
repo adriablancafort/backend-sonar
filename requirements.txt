@@ -1,1 +1,4 @@
-fastapi[standard]
+fastapi
+uvicorn
+python-dotenv
+supabase

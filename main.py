@@ -1,8 +1,9 @@
+from database import supabase
 from fastapi import FastAPI
-from data import artists
 
 app = FastAPI()
 
-@app.get("/artists")
+@app.get("/activities")
 def read_activities():
-    return artists
+    results = supabase.table("activities").select("title,description,video_uri").execute()
+    return results.data
