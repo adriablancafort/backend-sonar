@@ -9,7 +9,7 @@ def read_activities():
     results = supabase.table("activities").select("id,title,description,video_uri").execute()
     return results.data
 
-@app.post("/activity")
+@app.post("/activities")
 def process_activity_swipe(swipes: list[ActivitySwipe]):
     for swipe in swipes:
         print(f"Activity ID: {swipe.id}, Swiped Right: {swipe.swipe_right}")

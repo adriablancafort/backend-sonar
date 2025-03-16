@@ -1,0 +1,13 @@
+Dockerfile
+.dockerignore
+.git
+.gitignore
+.gitattributes
+README.md
+.vscode
+__pycache__
+.mypy_cache
+.venv
+*.pyc
+.venv
+**/.env
