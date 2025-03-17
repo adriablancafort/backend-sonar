@@ -15,7 +15,8 @@ app.add_middleware(
 
 @app.get("/activities")
 def read_activities():
-    results = supabase.table("activities").select("id,title,description,video_uri").execute()
+    ids = [1, 2]
+    results = supabase.table("activities").select("id,title,description,video_uri").in_("id", ids).execute()
     return results.data
 
 @app.post("/activities")
