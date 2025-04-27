@@ -9,5 +9,6 @@ class TagResponse(BaseModel):
     selected_ids: list[int]
 
 class ActivityResponse(BaseModel):
-    id: int
-    selected_ids: list[int]
+    quiz_id: int
+    accepted_ids: list[int]
+    rejected_ids: list[int]

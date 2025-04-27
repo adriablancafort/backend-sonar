@@ -30,7 +30,7 @@ def read_schedule():
 def write_schedule(response: ScheduleResponse):
     """Write selected schedule IDs to the database."""
     supabase.table("quizzes").update({
-        "schedule_ids": response.selectedt
+        "schedule_ids": response.selected_ids
     }).eq("id", response.quiz_id).execute()
     return {"status": "success"}
 
@@ -45,7 +45,7 @@ def read_tags():
 def write_tags(response: TagResponse):
     """Write selected tag IDs to the database."""
     supabase.table("quizzes").update({
-        "tags_ids": response.selectedt
+        "tags_ids": response.selected_ids
     }).eq("id", response.quiz_id).execute()
     return {"status": "success"}
 
@@ -59,10 +59,12 @@ def read_activities():
 
 @app.post("/activities")
 def write_activities(response: ActivityResponse):
-    """Write selected activity IDs to the database."""
-    print(f"Quiz ID: {response.quiz_id}")
-    for item_id in response.selected_ids:
-        print(f"Selected ID: {item_id}")
+    """Write accepted and rejected activity IDs to the database."""
+    print(response)
+    supabase.table("quizzes").update({
+        "accepted_activities_ids": response.accepted_ids,
+        "rejected_activities_ids": response.rejected_ids
+    }).eq("id", response.quiz_id).execute()
     return {"status": "success"}
 
 
