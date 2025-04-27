@@ -1,5 +1,6 @@
 from database import supabase
-from models import ScheduleResponse, TagResponse, ActivityResponse
+from models import ScheduleRequest, TagRequest, ActivityRequest
+from functions import activities_swipes, activities_results
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -13,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/quiz")
+@app.post("/quiz")
 def create_quiz():
     """Create a new quiz row and return its ID."""
     response = supabase.table("quizzes").insert({}).execute()
@@ -22,75 +23,52 @@ def create_quiz():
 
 @app.get("/schedule")
 def read_schedule():
-    """Fetch all schedules from the database."""
-    results = supabase.table("schedules").select("id,title,date").execute()
-    return results.data
+    """Fetch all schedule from the database."""
+    response = supabase.table("schedules").select("id,title,date").execute()
+    return response.data
 
 @app.post("/schedule")
-def write_schedule(response: ScheduleResponse):
+def write_schedule(quiz_id: int, request: ScheduleRequest):
     """Write selected schedule IDs to the database."""
     supabase.table("quizzes").update({
-        "schedule_ids": response.selected_ids
-    }).eq("id", response.quiz_id).execute()
+        "schedule_ids": request.selected_ids
+    }).eq("id", quiz_id).execute()
     return {"status": "success"}
 
 
 @app.get("/tags")
 def read_tags():
     """Fetch all tags from the database."""
-    results = supabase.table("tags").select("id,title").execute()
-    return results.data
+    response = supabase.table("tags").select("id,title").execute()
+    return response.data
 
 @app.post("/tags")
-def write_tags(response: TagResponse):
+def write_tags(quiz_id: int, request: TagRequest):
     """Write selected tag IDs to the database."""
     supabase.table("quizzes").update({
-        "tags_ids": response.selected_ids
-    }).eq("id", response.quiz_id).execute()
+        "tags_ids": request.selected_ids
+    }).eq("id", quiz_id).execute()
     return {"status": "success"}
 
 
 @app.get("/activities")
-def read_activities():
+def read_activities(quiz_id: int):
     """Return personalized activities list."""
-    ids = [1, 4, 10, 23]
-    results = supabase.table("activities").select("id,title,description,video_uri").in_("id", ids).execute()
-    return results.data
+    response = activities_swipes(quiz_id)
+    return response
 
 @app.post("/activities")
-def write_activities(response: ActivityResponse):
+def write_activities(quiz_id: int, request: ActivityRequest):
     """Write accepted and rejected activity IDs to the database."""
-    print(response)
     supabase.table("quizzes").update({
-        "accepted_activities_ids": response.accepted_ids,
-        "rejected_activities_ids": response.rejected_ids
-    }).eq("id", response.quiz_id).execute()
+        "accepted_activities_ids": request.accepted_ids,
+        "rejected_activities_ids": request.rejected_ids
+    }).eq("id", quiz_id).execute()
     return {"status": "success"}
 
 
 @app.get("/results")
-def read_results():
+def read_results(quiz_id: int):
     """Return the final personalized schedule results."""
-    results = [
-        {
-            "title": "Yoga Class",
-            "description": "A relaxing yoga session to improve flexibility and reduce stress.",
-            "schedule": "Monday, 7:00 AM - 8:00 AM",
-        },
-        {
-            "title": "Cooking Workshop",
-            "description": "Learn to cook delicious meals with professional chefs.",
-            "schedule": "Wednesday, 5:00 PM - 7:00 PM",
-        },
-        {
-            "title": "Art Class",
-            "description": "Explore your creativity with painting and drawing lessons.",
-            "schedule": "Friday, 3:00 PM - 5:00 PM",
-        },
-        {
-            "title": "Fitness Bootcamp",
-            "description": "An intense workout session to boost your strength and stamina.",
-            "schedule": "Saturday, 6:00 AM - 7:30 AM",
-        },
-    ]
-    return results
+    response = activities_results(quiz_id)
+    return response

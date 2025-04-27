@@ -1,14 +1,11 @@
 from pydantic import BaseModel
 
-class ScheduleResponse(BaseModel):
-    quiz_id: int
+class ScheduleRequest(BaseModel):
     selected_ids: list[int]
 
-class TagResponse(BaseModel):
-    quiz_id: int
+class TagRequest(BaseModel):
     selected_ids: list[int]
 
-class ActivityResponse(BaseModel):
-    quiz_id: int
+class ActivityRequest(BaseModel):
     accepted_ids: list[int]
     rejected_ids: list[int]
