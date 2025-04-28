@@ -1,9 +1,16 @@
 from database import supabase
 
 def activities_swipes(quiz_id: int):
-    """Return personalized activities swipes list."""
-    ids = [1, 4, 10, 22]
-    results = supabase.table("activities").select("id,title,description,video_uri").in_("id", ids).execute()
+    """Return personalized activities swipes list based on tag embeddings similarity."""
+
+    results = supabase.rpc(
+        "get_matching_activities_by_quiz_tags",
+        {
+            "input_quiz_id": quiz_id,
+            "match_count": 8
+        }
+    ).execute()
+    
     return results.data
 
 def activities_results(quiz_id: int):
