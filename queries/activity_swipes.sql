@@ -31,10 +31,10 @@ BEGIN
     RETURN QUERY
     SELECT 
         a.id::INTEGER, 
-        a.title, 
-        a.description, 
-        a.video_uri,
-        a.tags
+        a.title::TEXT, 
+        a.description::TEXT, 
+        a.video_uri::TEXT,
+        a.tags::TEXT
     FROM activities a
     WHERE a.schedule_id = ANY(schedule_ids)
     ORDER BY a.embedding <=> combined_embedding
