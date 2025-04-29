@@ -24,7 +24,7 @@ def create_quiz():
 @app.get("/schedule")
 def read_schedule():
     """Fetch all schedule from the database."""
-    response = supabase.table("schedules").select("id,title,date").execute()
+    response = supabase.table("schedules").select("id,title,date,type").execute()
     return response.data
 
 @app.post("/schedule")
