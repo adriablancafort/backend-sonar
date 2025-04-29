@@ -39,7 +39,7 @@ def write_schedule(quiz_id: int, request: ScheduleRequest):
 @app.get("/tags")
 def read_tags():
     """Fetch all tags from the database."""
-    response = supabase.table("tags").select("id,title").execute()
+    response = supabase.table("tags").select("id,title,image_uri").execute()
     return response.data
 
 @app.post("/tags")
