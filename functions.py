@@ -1,4 +1,7 @@
 from database import supabase
+from datetime import time, datetime
+from intervaltree import IntervalTree
+from collections import defaultdict
 
 def activities_swipes(quiz_id: int):
     """Return personalized activities swipes list based on tag embeddings similarity."""
@@ -29,45 +32,46 @@ def activities_results(quiz_id: int):
     
     return results.data
 
+
+def time_to_minutes(t: time) -> int:
+    """
+    Converts time to minutes.
+    """
+    t = datetime.strptime(t, "%H:%M:%S").time()
+    if t.hour < 8:   #Because Sónar Night has activities before and past 24h, 8h is the middle bewtween start of Sònar Day and end of Sònar Night
+        t = time(t.hour + 24, t.minute)
+    return t.hour * 60 + t.minute
+
 def optimum_timetable(input: list[dict]) -> list[int]:
     """
     Given a list of activities sorted by priority
     descendingly, finds a maximal length scheduling so 
     that no activity is chosen unless its choosing 
-    doesn't impede a higher priority activity from being seleced.
-
-    The problem can be reduced to a weighted scheduling with
-    power of 2 weights.
+    doesn't impede a higher priority activity from being selected.
 
     Running time: O(n·log(n))
 
     Params:
         input: list of activities. Each activity must have the fields
-               "id" (int), "start_time" (str, e.g '17:00:00') 
-               and "end_time" (str)
+                "id" (int), schedule_id (int), "start_time" (str, e.g '17:00:00') 
+                and "end_time" (str)
     
     Returns:
         list: ids of the selected activities
     """
-    
-    # give power of 2 weights to the activities, so the
-    # weighted scheduling becomes equivalent to a greedy
-    # scheduling
-    val = 1 << (len(input) - 1) # 2^(len(input) - 1)
-    for i in range(len(input)):
-        input[i]["value"] = val
-        val = val // 2
+    trees = defaultdict(IntervalTree)  # IntervalTree per cada schedule_id
+    selected_ids = []
 
-    # convert time to integer
     for act in input:
-        start, end = act["start_time"], act["end_time"]
-        start_h, start_min, _ = map(int, start.split(':'))
-        end_h, end_min, _ = map(int, end.split(':'))
+        start = time_to_minutes(act["start_time"])
+        end = time_to_minutes(act["end_time"])
 
-        act["start_time"] = start_h * 60 + start_min
-        act["end_time"] = end_h * 60 + end_min
+        tree = trees[act["schedule_id"]]
+        if not tree.overlaps(start, end):
+            tree[start:end] = act["id"]
+            selected_ids.append(act["id"])
 
-    return weighted_scheduling(input)
+    return selected_ids
 
 def weighted_scheduling(activities: list[dict])->list[int]:
     """

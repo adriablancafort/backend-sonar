@@ -4,3 +4,5 @@ python-dotenv
 pydantic
 supabase
 openai
+intervaltree
+
