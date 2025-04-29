@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION get_matching_activities_by_quiz_tags(input_quiz_id INTEGER, match_count INTEGER)
-RETURNS TABLE (id INTEGER, title TEXT, description TEXT, video_uri TEXT)
+RETURNS TABLE (id INTEGER, title TEXT, description TEXT, video_uri TEXT, tags TEXT)
 LANGUAGE plpgsql
 AS $$
 DECLARE
@@ -33,7 +33,8 @@ BEGIN
         a.id::INTEGER, 
         a.title, 
         a.description, 
-        a.video_uri
+        a.video_uri,
+        a.tags
     FROM activities a
     WHERE a.schedule_id = ANY(schedule_ids)
     ORDER BY a.embedding <=> combined_embedding
