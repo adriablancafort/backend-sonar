@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION get_activities_by_user_preferences(input_quiz_id INTEGER)
-RETURNS TABLE (id INTEGER, start_time TIME, end_time TIME)
+RETURNS TABLE (id INTEGER, start_time TIME, end_time TIME, schedule_id INTEGER)
 LANGUAGE plpgsql
 AS $$
 DECLARE
@@ -47,7 +47,8 @@ BEGIN
         SELECT 
             a.id::INTEGER, 
             a.start_time::TIME, 
-            a.end_time::TIME
+            a.end_time::TIME,
+            a.schedule_id::INTEGER
         FROM activities a
         WHERE 
             a.schedule_id = ANY(schedule_ids) AND
@@ -63,7 +64,8 @@ BEGIN
         SELECT 
             a.id::INTEGER,
             a.start_time::TIME, 
-            a.end_time::TIME
+            a.end_time::TIME,
+            a.schedule_id::INTEGER
         FROM activities a
         WHERE 
             a.schedule_id = ANY(schedule_ids)
@@ -75,7 +77,8 @@ BEGIN
         SELECT 
             a.id::INTEGER,
             a.start_time::TIME, 
-            a.end_time::TIME
+            a.end_time::TIME,
+            a.schedule_id::INTEGER
         FROM activities a
         WHERE 
             a.schedule_id = ANY(schedule_ids) AND
