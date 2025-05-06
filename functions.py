@@ -27,10 +27,14 @@ def activities_results(quiz_id: int):
     ).execute()
 
     ids = optimum_timetable(results.data)
+    
+    ids_order = {id: i for i, id in enumerate(ids)} #In order to maintain the order of the activities
 
     results = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,schedules(title)").in_("id", ids).execute()
-    
-    return results.data
+
+    results = sorted(results.data, key=lambda item: ids_order[item["id"]])
+
+    return results
 
 
 def time_to_minutes(t: time) -> int:
@@ -60,7 +64,6 @@ def optimum_timetable(input: list[dict]) -> list[int]:
         list: ids of the selected activities
     """
     trees = defaultdict(IntervalTree)  # IntervalTree per cada schedule_id
-    selected_ids = []
 
     for act in input:
         start = time_to_minutes(act["start_time"])
@@ -69,11 +72,17 @@ def optimum_timetable(input: list[dict]) -> list[int]:
         tree = trees[act["schedule_id"]]
         if not tree.overlaps(start, end):
             tree[start:end] = act["id"]
-            selected_ids.append(act)
+    
+    ordered_ids = []
+    for tree in trees.values():  # o simplement: for tree in trees.values() si l'ordre dels schedules no importa
+        intervals = sorted(tree, key=lambda i: i.begin)
+        ordered_ids += [i.data for i in intervals]
 
-    selected_ids.sort(key=lambda x: x["schedule_id"])
+    return ordered_ids
 
-    return [act["id"] for act in selected_ids]
+ 
+
+
 
 def weighted_scheduling(activities: list[dict])->list[int]:
     """
