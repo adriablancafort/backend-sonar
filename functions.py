@@ -39,7 +39,7 @@ def time_to_minutes(t: time) -> int:
     """
     t = datetime.strptime(t, "%H:%M:%S").time()
     if t.hour < 8:   #Because Sónar Night has activities before and past 24h, 8h is the middle bewtween start of Sònar Day and end of Sònar Night
-        t = t.hour + 24 + t.minute + 24 * 60
+        return t.hour + 24 + t.minute + 24 * 60
     return t.hour * 60 + t.minute
 
 def optimum_timetable(input: list[dict]) -> list[int]:
