@@ -69,9 +69,11 @@ def optimum_timetable(input: list[dict]) -> list[int]:
         tree = trees[act["schedule_id"]]
         if not tree.overlaps(start, end):
             tree[start:end] = act["id"]
-            selected_ids.append(act["id"])
+            selected_ids.append(act)
 
-    return selected_ids
+    selected_ids.sort(key=lambda x: x["schedule_id"])
+
+    return [act["id"] for act in selected_ids]
 
 def weighted_scheduling(activities: list[dict])->list[int]:
     """
