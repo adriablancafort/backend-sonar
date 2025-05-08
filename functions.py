@@ -62,7 +62,7 @@ def activities_results(quiz_id: int):
     
     ids_order = {id: i for i, id in enumerate(ids)} #In order to maintain the order of the activities
 
-    results = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,schedules(title)").in_("id", ids).execute()
+    results = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,tags,dominant_color,dark_color,pastel_color,activity_uri,schedules(title)").in_("id", ids).execute()
 
     results = sorted(results.data, key=lambda item: ids_order[item["id"]])
 
