@@ -66,7 +66,7 @@ def activities_results(quiz_id: int):
 
     results = sorted(results.data, key=lambda item: ids_order[item["id"]])
 
-    return results
+    return results.data
 
 
 def time_to_minutes(t: time) -> int:
