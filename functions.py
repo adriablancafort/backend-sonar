@@ -2,47 +2,19 @@ from database import supabase
 from datetime import time, datetime
 from intervaltree import IntervalTree
 from collections import defaultdict
-import random
-import numpy as np
 
-def activities_swipes(quiz_id: int, match_count: int = 10,
-                      roulette=False):
+def activities_swipes(quiz_id: int):
     """Return personalized activities swipes list based on tag embeddings similarity."""
 
     results = supabase.rpc(
         "get_matching_activities_by_quiz_tags",
         {
             "input_quiz_id": quiz_id,
-            "match_count": match_count
+            "match_count": 8
         }
-    ).execute().data
-
-    if roulette:
-        # roulette random selection
-
-        indexes = np.array(range(match_count))
-        weights = np.array(range(match_count, 0, -1))
-
-        selected = []
-
-        for _ in range(8):
-            prob = weights / weights.sum()
-            
-            idx = np.random.choice(len(indexes), p=prob)
-            selected.append(indexes[idx])
-
-            indexes = np.delete(indexes, idx)
-            weights = np.delete(weights, idx)
-        
-        selected.sort()
-        
-        return [results[idx] for idx in selected]
-    else:
-        # uniform random selection
-        selected = random.sample(range(match_count), 8)
-        selected.sort()
-
-        return [results[idx] for idx in selected]
+    ).execute()
+    
+    return results.data
 
 def activities_results(quiz_id: int):
     """Return the final personalized schedule results."""
