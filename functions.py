@@ -35,14 +35,18 @@ def activities_swipes(quiz_id: int, match_count: int = 10,
             weights = np.delete(weights, idx)
         
         selected.sort()
-        
-        return [results[idx] for idx in selected]
+
+        results = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,video_uri,tags,activity_uri,dominant_color,dark_color,pastel_color,schedules(title)").in_("id", selected).execute().data
+
+        return results.data
     else:
         # uniform random selection
         selected = random.sample(range(match_count), 8)
         selected.sort()
 
-        return [results[idx] for idx in selected]
+        results = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,video_uri,tags,activity_uri,dominant_color,dark_color,pastel_color,schedules(title)").in_("id", selected).execute().data
+
+        return results.data
 
 def activities_results(quiz_id: int):
     """Return the final personalized schedule results."""
