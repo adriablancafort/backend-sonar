@@ -5,9 +5,11 @@ from collections import defaultdict
 import random
 import numpy as np
 
-def activities_swipes(quiz_id: int, match_count: int = 10,
-                      roulette=False):
+def activities_swipes(quiz_id: int, return_count: int = 6,
+                      match_count: int = 10, roulette=True):
     """Return personalized activities swipes list based on tag embeddings similarity."""
+
+    match_count = max(return_count, match_count)
 
     results = supabase.rpc(
         "get_matching_activities_by_quiz_tags",
@@ -25,7 +27,7 @@ def activities_swipes(quiz_id: int, match_count: int = 10,
 
         selected = []
 
-        for _ in range(8):
+        for _ in range(return_count):
             prob = weights / weights.sum()
             
             idx = np.random.choice(len(indexes), p=prob)
@@ -35,14 +37,17 @@ def activities_swipes(quiz_id: int, match_count: int = 10,
             weights = np.delete(weights, idx)
         
         selected.sort()
+        selected = [results[idx]["id"] for idx in selected]
 
         results = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,video_uri,tags,activity_uri,dominant_color,dark_color,pastel_color,schedules(title)").in_("id", selected).execute()
 
         return results.data
     else:
         # uniform random selection
-        selected = random.sample(range(match_count), 8)
+        selected = random.sample(range(match_count), return_count)
+        
         selected.sort()
+        selected = [results[idx]["id"] for idx in selected]
 
         results = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,video_uri,tags,activity_uri,dominant_color,dark_color,pastel_color,schedules(title)").in_("id", selected).execute()
 
