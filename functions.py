@@ -110,6 +110,8 @@ def optimum_timetable(input: list[dict]) -> list[int]:
         if not tree.overlaps(start, end):
             tree[start:end] = act["id"]
     
+    trees = dict(sorted(trees.items()))     #beacuse input is not sorted by schedule_id
+    
     ordered_ids = []
     for tree in trees.values():  # o simplement: for tree in trees.values() si l'ordre dels schedules no importa
         intervals = sorted(tree, key=lambda i: i.begin)
