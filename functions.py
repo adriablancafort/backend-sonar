@@ -6,7 +6,7 @@ import random
 import numpy as np
 
 def activities_swipes(quiz_id: int, return_count: int = 6,
-                      match_count: int = 10, roulette=True):
+                      match_count: int = 20, roulette=False):
     """Return personalized activities swipes list based on tag embeddings similarity."""
 
     match_count = max(return_count, match_count)
