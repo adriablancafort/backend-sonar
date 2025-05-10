@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION get_activities_by_user_preferences(input_quiz_id INTEGER)
+CREATE OR REPLACE FUNCTION validation_get_activities_by_user_preferences(input_quiz_id INTEGER)
 RETURNS TABLE (id INTEGER, start_time TIME, end_time TIME, schedule_id INTEGER)
 LANGUAGE plpgsql
 AS $$
