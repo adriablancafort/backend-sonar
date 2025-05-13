@@ -1,5 +1,5 @@
 from database import supabase
-from models import ScheduleRequest, TagRequest, ActivityRequest
+from models import ScheduleRequest, TagRequest, ActivityRequest, SwipeRequest
 from functions import activities_swipes, activities_results
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -52,14 +52,29 @@ def write_tags(quiz_id: int, request: TagRequest):
 
 
 @app.get("/activities")
+def read_activities():
+    """Return all activities list."""
+    response = supabase.table("activities").select("id,title,image_uri").execute()
+    return response.data
+
+@app.post("/activities")
+def read_activities(quiz_id: int, request: ActivityRequest):
+    """Write essential activities IDs to the database."""
+    supabase.table("quizzes").update({
+        "essential_activities_ids": request.selected_ids
+    }).eq("id", quiz_id).execute()
+    return {"status": "success"}
+
+
+@app.get("/swipes")
 def read_activities(quiz_id: int):
-    """Return personalized activities list."""
+    """Return personalized swipes list."""
     response = activities_swipes(quiz_id)
     return response
 
-@app.post("/activities")
-def write_activities(quiz_id: int, request: ActivityRequest):
-    """Write accepted and rejected activity IDs to the database."""
+@app.post("/swipes")
+def write_activities(quiz_id: int, request: SwipeRequest):
+    """Write accepted and rejected swipes IDs to the database."""
     supabase.table("quizzes").update({
         "accepted_activities_ids": request.accepted_ids,
         "rejected_activities_ids": request.rejected_ids
