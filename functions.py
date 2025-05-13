@@ -17,8 +17,11 @@ def activities_swipes(quiz_id: int, return_count: int = 6,
             "input_quiz_id": quiz_id,
             "match_count": match_count
         }
-    ).execute().data
+    ).execute()
 
+    return results.data
+
+    """
     if roulette:
         # roulette random selection
 
@@ -52,6 +55,7 @@ def activities_swipes(quiz_id: int, return_count: int = 6,
         results = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,video_uri,tags,activity_uri,dominant_color,dark_color,pastel_color,schedules(title)").in_("id", selected).execute()
 
         return results.data
+    """
 
 def activities_results(quiz_id: int):
     """Return the final personalized schedule results."""
