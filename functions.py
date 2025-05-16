@@ -91,7 +91,7 @@ def activities_final_tags(quiz_id: int):
     ids_order = {id: i for i, (id, _) in enumerate(ids_with_distances)}
     id_to_percentatge = {id: round(percentatge, 2) for id, percentatge in ids_with_distances}
 
-    results = supabase.table("all_tags").select("id,title").in_("id", ordered_ids).execute()
+    results = supabase.table("all_tags").select("id,title,frase").in_("id", ordered_ids).execute()
 
     enriched = []
     for item in results.data:
