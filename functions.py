@@ -12,7 +12,7 @@ def activities_swipes(quiz_id: int, return_count: int = 6,
     match_count = max(return_count, match_count)
 
     results = supabase.rpc(
-        "get_matching_activities_by_quiz_tags",
+        "validation_get_matching_activities_by_quiz_tags",
         {
             "input_quiz_id": quiz_id,
             "match_count": match_count
@@ -58,7 +58,7 @@ def activities_results(quiz_id: int):
     """Return the final personalized schedule results."""
     
     results = supabase.rpc(
-        "get_activities_by_user_preferences",
+        "validation_get_activities_by_user_preferences",
         {
             "input_quiz_id": quiz_id,
         }
@@ -79,7 +79,7 @@ def activities_final_tags(quiz_id: int):
     """Return the final personalized tags results."""
 
     results = supabase.rpc(
-        "get_tag_distances_by_user_preferences",
+        "validation_get_tag_distances_by_user_preferences",
         {
             "input_quiz_id": quiz_id,
         }
