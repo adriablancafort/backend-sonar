@@ -1,6 +1,6 @@
 from database import supabase
 from models import ScheduleRequest, TagRequest, ActivityRequest
-from functions import activities_swipes, activities_results
+from functions import activities_swipes, activities_results, activities_final_tags
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -73,4 +73,9 @@ def read_results(quiz_id: int):
     response = activities_results(quiz_id)
     return response
 
-#Aquí s'ha de posar el @app.get("/personalized_tags")
+#Aquí s'ha de posar bé el @app.get("/personalized_tags")
+@app.get("/personalized_tags")
+def read_personalized_tags(quiz_id: int):
+    """Return the final personalized tags results."""
+    response = activities_final_tags(quiz_id)
+    return response
