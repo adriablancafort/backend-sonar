@@ -89,11 +89,19 @@ def activities_final_tags(quiz_id: int):
 
     ordered_ids = [id for id, _ in ids_with_distances]
     ids_order = {id: i for i, (id, _) in enumerate(ids_with_distances)}
+    id_to_percentatge = {id: round(percentatge, 2) for id, percentatge in ids_with_distances}
 
-    results = supabase.table("all_tags").select("id,title,description").in_("id", ordered_ids).execute()
-    results = sorted(results.data, key=lambda item: ids_order[item["id"]])
+    results = supabase.table("all_tags").select("id,title").in_("id", ordered_ids).execute()
 
-    return results
+    enriched = []
+    for item in results.data:
+        item["percentage"] = id_to_percentatge[item["id"]]
+        enriched.append(item)
+
+    enriched = sorted(enriched, key=lambda item: ids_order[item["id"]])
+
+    return enriched
+
 
 
 def personalized_tags(input: list[dict]) -> list[tuple[int]]:
@@ -113,13 +121,14 @@ def personalized_tags(input: list[dict]) -> list[tuple[int]]:
                 "id" (int), "distance" (float)
     """
 
-    first_tag, first_percentage = input[0]["id"], (1-(input[0]["distance"]/input[-1]["distance"]))*100
+    first = random.randint(0, 10)
+    first_tag, first_percentage = input[first]["tag_id"], (1-(input[first]["distance"]/input[-1]["distance"]))*100
 
-    second = random.randint(30, 80)
-    second_tag, second_percentage = input[second]["id"], (1-(input[second]["distance"]/input[-1]["distance"]))*100
+    second = random.randint(60, 140)
+    second_tag, second_percentage = input[second]["tag_id"], (1-(input[second]["distance"]/input[-1]["distance"]))*100
 
-    third = random.randint(80, 150)
-    third_tag, third_percentage = input[third]["id"], (1-(input[third]["distance"]/input[-1]["distance"]))*100
+    third = random.randint(180, 250)
+    third_tag, third_percentage = input[third]["tag_id"], (1-(input[third]["distance"]/input[-1]["distance"]))*100
 
     return [
         (first_tag, first_percentage),

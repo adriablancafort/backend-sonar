@@ -44,7 +44,7 @@ BEGIN
         RETURN QUERY
         SELECT 
             t.id::INTEGER,
-            (l2_distance(t.embedding, accepted_embedding) - l2_distance(t.embedding, rejected_embedding)) AS distance
+            abs(l2_distance(t.embedding, accepted_embedding) - l2_distance(t.embedding, rejected_embedding)) AS distance
         FROM all_tags t
         ORDER BY distance ASC;
 
