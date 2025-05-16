@@ -5,85 +5,87 @@ AS $$
 DECLARE
     accepted_ids INTEGER[];
     rejected_ids INTEGER[];
+    essential_ids INTEGER[];
     schedule_ids INTEGER[];
     accepted_embedding VECTOR;
     rejected_embedding VECTOR;
 BEGIN
-    -- Get the accepted_activities_ids, rejected_activities_ids, and schedule_ids from the quiz
-    SELECT 
+    -- Get the accepted, rejected, essential activity IDs and schedule_ids from the quiz
+    SELECT
         string_to_array(trim(both '[]' from q.accepted_activities_ids), ',')::INTEGER[],
         string_to_array(trim(both '[]' from q.rejected_activities_ids), ',')::INTEGER[],
+        string_to_array(trim(both '[]' from q.essential_activities_ids), ',')::INTEGER[],
         string_to_array(trim(both '[]' from q.schedule_ids), ',')::INTEGER[]
-    INTO 
+    INTO
         accepted_ids,
         rejected_ids,
+        essential_ids,
         schedule_ids
     FROM quizzes q
     WHERE q.id = input_quiz_id;
-    
+
     -- Check if quiz exists
     IF schedule_ids IS NULL THEN
         RAISE EXCEPTION 'Quiz with ID % not found', input_quiz_id;
     END IF;
-    
-    -- Calculate average embedding of accepted activities (if any)
+
+    -- Compute average embeddings
     IF array_length(accepted_ids, 1) > 0 THEN
         SELECT AVG(a.embedding) INTO accepted_embedding
         FROM activities a
         WHERE a.id = ANY(accepted_ids);
     END IF;
-    
-    -- Calculate average embedding of rejected activities (if any)
+
     IF array_length(rejected_ids, 1) > 0 THEN
         SELECT AVG(a.embedding) INTO rejected_embedding
         FROM activities a
         WHERE a.id = ANY(rejected_ids);
     END IF;
-    
-    -- Return activities ranked by preference
-    -- If we have both accepted and rejected activities:
+
+    -- Return ranked activities
     IF accepted_embedding IS NOT NULL AND rejected_embedding IS NOT NULL THEN
         RETURN QUERY
-        SELECT 
-            a.id::INTEGER, 
-            a.start_time::TIME, 
+        SELECT
+            a.id::INTEGER,
+            a.start_time::TIME,
             a.end_time::TIME,
             a.schedule_id::INTEGER
         FROM activities a
-        WHERE 
+        WHERE
             a.schedule_id = ANY(schedule_ids) AND
-            -- Exclude rejected activities
             NOT (a.id = ANY(rejected_ids))
-        ORDER BY 
-            -- Proximity to accepted minus proximity to rejected
+        ORDER BY
+            (a.id = ANY(essential_ids)) DESC,
             (-(a.embedding <=> accepted_embedding) + (a.embedding <=> rejected_embedding)) DESC;
-    
-    -- If we only have accepted activities:
+
     ELSIF accepted_embedding IS NOT NULL THEN
         RETURN QUERY
-        SELECT 
+        SELECT
             a.id::INTEGER,
-            a.start_time::TIME, 
+            a.start_time::TIME,
             a.end_time::TIME,
             a.schedule_id::INTEGER
         FROM activities a
-        WHERE 
+        WHERE
             a.schedule_id = ANY(schedule_ids)
-        ORDER BY a.embedding <=> accepted_embedding ASC;
-    
-    -- If we only have rejected activities:
+        ORDER BY
+            (a.id = ANY(essential_ids)) DESC,
+            a.embedding <=> accepted_embedding ASC;
+
     ELSE
         RETURN QUERY
-        SELECT 
+        SELECT
             a.id::INTEGER,
-            a.start_time::TIME, 
+            a.start_time::TIME,
             a.end_time::TIME,
             a.schedule_id::INTEGER
         FROM activities a
-        WHERE 
+        WHERE
             a.schedule_id = ANY(schedule_ids) AND
             NOT (a.id = ANY(rejected_ids))
-        ORDER BY a.embedding <=> rejected_embedding DESC; -- Sort by dissimilarity to rejected
+        ORDER BY
+            (a.id = ANY(essential_ids)) DESC,
+            a.embedding <=> rejected_embedding DESC;
     END IF;
 END;
 $$;
