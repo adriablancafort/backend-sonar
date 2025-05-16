@@ -74,6 +74,59 @@ def activities_results(quiz_id: int):
     return results
 
 
+def activities_final_tags(quiz_id: int):
+    """Return the final personalized tags results."""
+
+    results = supabase.rpc(
+        "get_tag_distances_by_user_preferences",
+        {
+            "input_quiz_id": quiz_id,
+        }
+    ).execute()
+
+    ids_with_distances = personalized_tags(results.data)
+
+    ordered_ids = [id for id, _ in ids_with_distances]
+    ids_order = {id: i for i, (id, _) in enumerate(ids_with_distances)}
+
+    results = supabase.table("all_tags").select("id,title,description").in_("id", ordered_ids).execute()
+    results = sorted(results.data, key=lambda item: ids_order[item["id"]])
+
+    return results
+
+
+def personalized_tags(input: list[dict]) -> list[tuple[int]]:
+    """
+    Given a list of ids and distances, sorted by priority 
+    descendingly, returns three random tags and their matching
+    percentages. 
+
+    Running time: O(1)
+
+    Params:
+        input: list of tuples (id, distance). Each tuple must have the fields
+                "id" (int), "distance" (float)
+    
+    Returns:
+        list: list of tuples (id, distance). Each tuple must have the fields
+                "id" (int), "distance" (float)
+    """
+
+    first_tag, first_percentage = input[0]["id"], (1-(input[0]["distance"]/input[-1]["distance"]))*100
+
+    second = random.randint(30, 80)
+    second_tag, second_percentage = input[second]["id"], (1-(input[second]["distance"]/input[-1]["distance"]))*100
+
+    third = random.randint(80, 150)
+    third_tag, third_percentage = input[third]["id"], (1-(input[third]["distance"]/input[-1]["distance"]))*100
+
+    return [
+        (first_tag, first_percentage),
+        (second_tag, second_percentage),
+        (third_tag, third_percentage)
+    ]
+
+
 def time_to_minutes(t: time) -> int:
     """
     Converts time to minutes.
