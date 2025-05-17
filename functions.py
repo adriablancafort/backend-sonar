@@ -5,7 +5,7 @@ from collections import defaultdict
 import random
 import numpy as np
 
-def activities_swipes(quiz_id: int, return_count: int = 6,
+def activities_swipes(quiz_id: int, return_count: int = 10,
                       match_count: int = 20, roulette=False):
     """Return personalized activities swipes list based on tag embeddings similarity."""
 
@@ -18,6 +18,8 @@ def activities_swipes(quiz_id: int, return_count: int = 6,
             "match_count": match_count
         }
     ).execute().data
+
+    return_count = min(return_count, len(results))
 
     if roulette:
         # roulette random selection
