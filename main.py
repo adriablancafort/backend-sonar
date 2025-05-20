@@ -1,6 +1,6 @@
 from database import supabase
 from models import ScheduleRequest, TagRequest, ActivityRequest, SwipeRequest
-from functions import activities_swipes, activities_results, activities_final_tags
+from functions import get_swipes, get_results, get_personalized_tags
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -55,9 +55,7 @@ def write_tags(quiz_id: int, request: TagRequest):
 def read_activities(quiz_id: int):
     """Return activities filtered by quiz's selected schedules."""
     response = supabase.table("quizzes").select("schedule_ids").eq("id", quiz_id).single().execute()
-    
     schedule_ids = [int(id_str) for id_str in response.data["schedule_ids"].strip("[]").split(",") if id_str.strip()]
-
     response = supabase.table("activities").select("id,title,image_uri").in_("schedule_id", schedule_ids).execute()
     return response.data
 
@@ -73,7 +71,7 @@ def read_activities(quiz_id: int, request: ActivityRequest):
 @app.get("/swipes")
 def read_activities(quiz_id: int):
     """Return personalized swipes list."""
-    response = activities_swipes(quiz_id)
+    response = get_swipes(quiz_id)
     return response
 
 @app.post("/swipes")
@@ -89,11 +87,11 @@ def write_activities(quiz_id: int, request: SwipeRequest):
 @app.get("/results")
 def read_results(quiz_id: int):
     """Return the final personalized schedule results."""
-    response = activities_results(quiz_id)
+    response = get_results(quiz_id)
     return response
 
 @app.get("/recap")
 def read_personalized_tags(quiz_id: int):
     """Return the final personalized tags results."""
-    response = activities_final_tags(quiz_id)
+    response = get_personalized_tags(quiz_id)
     return response

@@ -5,8 +5,7 @@ from collections import defaultdict
 import random
 import numpy as np
 
-def activities_swipes(quiz_id: int, return_count: int = 6,
-                      match_count: int = 20, roulette=False):
+def get_swipes(quiz_id: int, return_count: int = 6, match_count: int = 20, roulette=False):
     """Return personalized activities swipes list based on tag embeddings similarity."""
 
     match_count = max(return_count, match_count)
@@ -54,7 +53,7 @@ def activities_swipes(quiz_id: int, return_count: int = 6,
         return results.data
 
 
-def activities_results(quiz_id: int):
+def get_results(quiz_id: int):
     """Return the final personalized schedule results."""
     
     results = supabase.rpc(
@@ -104,7 +103,7 @@ def activities_final_tags(quiz_id: int):
 
 
 
-def personalized_tags(input: list[dict]) -> list[tuple[int]]:
+def get_personalized_tags(input: list[dict]) -> list[tuple[int]]:
     """
     Given a list of ids and distances, sorted by priority 
     descendingly, returns three random tags and their matching
