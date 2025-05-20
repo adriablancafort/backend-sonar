@@ -50,7 +50,7 @@ BEGIN
             ELSE array(SELECT jsonb_array_elements_text(to_jsonb(a.tags)))
         END
     FROM activities a
-    WHERE a.schedule_id = ANY(schedule_ids)
+    WHERE a.schedule_id = ANY(schedule_ids) AND a.video_uri IS NOT NULL
     ORDER BY CASE
         WHEN is_even THEN a.embedding_personalitzat <=> combined_embedding
         ELSE a.embedding            <=> combined_embedding
