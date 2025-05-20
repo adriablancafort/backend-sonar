@@ -92,7 +92,7 @@ def read_results(quiz_id: int):
     response = activities_results(quiz_id)
     return response
 
-@app.get("/personalized-tags")
+@app.get("/recap")
 def read_personalized_tags(quiz_id: int):
     """Return the final personalized tags results."""
     response = activities_final_tags(quiz_id)
