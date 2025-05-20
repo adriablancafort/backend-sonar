@@ -1,5 +1,5 @@
 from database import supabase
-from embedings import get_embedding
+from ai import get_embedding
 
 results = supabase.table("tags").select("id,title,long_text").execute()
 

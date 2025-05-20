@@ -6,4 +6,3 @@ supabase
 openai
 intervaltree
 numpy
-
