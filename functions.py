@@ -7,9 +7,7 @@ import random
 def get_swipes(quiz_id: int, return_count: int = 8, match_count: int = 20):
     """Return personalized activities swipes list based on tag embeddings similarity."""
 
-    match_count = max(return_count, match_count)
-
-    results = supabase.rpc(
+    response = supabase.rpc(
         "swipes_query",
         {
             "input_quiz_id": quiz_id,
@@ -18,7 +16,7 @@ def get_swipes(quiz_id: int, return_count: int = 8, match_count: int = 20):
     ).execute().data
 
     # Return random selection of activities of length return_count
-    selected = random.sample(range(len(results)), return_count)
+    selected = random.sample(range(len(response)), return_count)
     selected.sort()
     selected = [results[idx]["id"] for idx in selected]
 
@@ -29,15 +27,15 @@ def get_swipes(quiz_id: int, return_count: int = 8, match_count: int = 20):
 def get_results(quiz_id: int):
     """Return the final personalized schedule results."""
     
-    results = supabase.rpc(
+    response = supabase.rpc(
         "results_query",
         {
             "input_quiz_id": quiz_id,
         }
     ).execute()
 
-    ids = optimum_timetable(results.data)
-    
+    ids = optimum_timetable(response.data)
+
     # Store results ids
     supabase.table("quizzes").update({
         "results_ids": ids
@@ -54,7 +52,6 @@ def get_results(quiz_id: int):
 def get_recap(quiz_id: int):
     """Return the final personalized tags results."""
 
-    # Fetch raw tag distances from Supabase
     response = supabase.rpc(
         "recap_query",
         {
@@ -66,7 +63,6 @@ def get_recap(quiz_id: int):
     if not data or len(data) < 250:
         return []
 
-    # Pick 3 tags with custom random logic
     last_distance = data[-1]["distance"]
     selected = [
         (data[random.randint(0, 10)]["tag_id"], (1 - (data[random.randint(0, 10)]["distance"] / last_distance)) * 100),
@@ -74,15 +70,12 @@ def get_recap(quiz_id: int):
         (data[random.randint(180, 250)]["tag_id"], (1 - (data[random.randint(180, 250)]["distance"] / last_distance)) * 100)
     ]
 
-    # Structure IDs, ordering, and percentage mapping
     ordered_ids = [tag_id for tag_id, _ in selected]
     ids_order = {tag_id: i for i, (tag_id, _) in enumerate(selected)}
     id_to_percentage = {tag_id: round(p, 2) for tag_id, p in selected}
 
-    # Fetch tag details
     tags_response = supabase.table("all_tags").select("id,title,frase").in_("id", ordered_ids).execute()
 
-    # Enrich and sort
     enriched = []
     for tag in tags_response.data:
         tag["percentage"] = id_to_percentage[tag["id"]]
@@ -92,13 +85,17 @@ def get_recap(quiz_id: int):
     return results
 
 
-def optimum_timetable(input: list[dict]) -> list[int]:
-    """Given a list of activities sorted by priority descendingly, finds a maximal length scheduling so 
-    that no activity is chosen unless its choosing doesn't impede a higher priority activity from being selected."""
+def optimum_timetable(input_activities: list[dict]) -> list[int]:
+    """Given a list of activities sorted by priority (essential first),
+    finds a maximal length scheduling."""
 
     trees = defaultdict(IntervalTree) # One IntervalTree per schedule_id
 
-    for act in input:
+    # input_activities is already sorted by the SQL query:
+    # 1. Essential activities
+    # 2. Other activities, ranked by preference.
+    # This loop will try to place essential activities first.
+    for act in input_activities:
         start = time_to_minutes(act["start_time"])
         end = time_to_minutes(act["end_time"])
 
@@ -106,14 +103,15 @@ def optimum_timetable(input: list[dict]) -> list[int]:
         if not tree.overlaps(start, end):
             tree[start:end] = act["id"]
 
-    # Sort schedules by ID (optional unless ordering matters)
+    # Sort schedules by ID for consistent output order of schedules
     trees = dict(sorted(trees.items()))
 
     selected_ids = []
-    for tree in trees.values():
-        intervals = sorted(tree, key=lambda i: i.begin)
+    for schedule_id in sorted(trees.keys()): # Process schedules in a consistent order
+        tree = trees[schedule_id]
+        intervals = sorted(tree, key=lambda i: i.begin) # Sort activities within each schedule by start time
         selected_ids.extend(i.data for i in intervals)
-
+            
     return selected_ids
 
 
