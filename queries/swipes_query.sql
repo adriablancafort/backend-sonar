@@ -6,11 +6,7 @@ DECLARE
     combined_embedding VECTOR;
     tag_ids INTEGER[];
     schedule_ids INTEGER[];
-    is_even BOOLEAN;
 BEGIN
-    -- Determine if input_quiz_id is even
-    is_even := (input_quiz_id % 2 = 0);
-
     -- Get the tags_ids and schedule_ids directly as arrays from the quiz
     SELECT 
         string_to_array(trim(both '[]' from q.tags_ids), ',')::INTEGER[],
@@ -27,15 +23,9 @@ BEGIN
     END IF;
     
     -- Get the combined embedding from tags
-    IF is_even THEN
-        SELECT AVG(t.embedding_personalitzat) INTO combined_embedding
-        FROM tags t
-        WHERE t.id = ANY(tag_ids);
-    ELSE
-        SELECT AVG(t.embedding) INTO combined_embedding
-        FROM tags t
-        WHERE t.id = ANY(tag_ids);
-    END IF;
+    SELECT AVG(t.embedding) INTO combined_embedding
+    FROM tags t
+    WHERE t.id = ANY(tag_ids);
     
     -- Return activities ordered by similarity that match schedule_id
     RETURN QUERY
@@ -51,10 +41,7 @@ BEGIN
         END
     FROM activities a
     WHERE a.schedule_id = ANY(schedule_ids) AND a.video_uri IS NOT NULL
-    ORDER BY CASE
-        WHEN is_even THEN a.embedding_personalitzat <=> combined_embedding
-        ELSE a.embedding            <=> combined_embedding
-    END
+    ORDER BY a.embedding <=> combined_embedding
     LIMIT match_count;
 END;
 $$;

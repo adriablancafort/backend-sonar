@@ -8,11 +8,7 @@ DECLARE
     schedule_ids INTEGER[];
     accepted_embedding VECTOR;
     rejected_embedding VECTOR;
-    is_even BOOLEAN;
 BEGIN
-    -- Determine if input_quiz_id is even
-    is_even := (input_quiz_id % 2 = 0);
-
     -- Get the accepted_activities_ids, rejected_activities_ids, and schedule_ids from the quiz
     SELECT 
         string_to_array(trim(both '[]' from q.accepted_activities_ids), ',')::INTEGER[],
@@ -32,28 +28,16 @@ BEGIN
     
     -- Calculate average embedding of accepted activities (if any)
     IF array_length(accepted_ids, 1) > 0 THEN
-        IF is_even THEN
-            SELECT AVG(a.embedding_personalitzat) INTO accepted_embedding
-            FROM activities a
-            WHERE a.id = ANY(accepted_ids);
-        ELSE
-            SELECT AVG(a.embedding) INTO accepted_embedding
-            FROM activities a
-            WHERE a.id = ANY(accepted_ids);
-        END IF;
+        SELECT AVG(a.embedding) INTO accepted_embedding
+        FROM activities a
+        WHERE a.id = ANY(accepted_ids);
     END IF;
     
     -- Calculate average embedding of rejected activities (if any)
     IF array_length(rejected_ids, 1) > 0 THEN
-        IF is_even THEN
-            SELECT AVG(a.embedding_personalitzat) INTO rejected_embedding
-            FROM activities a
-            WHERE a.id = ANY(rejected_ids);
-        ELSE
-            SELECT AVG(a.embedding) INTO rejected_embedding
-            FROM activities a
-            WHERE a.id = ANY(rejected_ids);
-        END IF;
+        SELECT AVG(a.embedding) INTO rejected_embedding
+        FROM activities a
+        WHERE a.id = ANY(rejected_ids);
     END IF;
     
     -- Return activities ranked by preference
@@ -72,10 +56,7 @@ BEGIN
             NOT (a.id = ANY(rejected_ids))
         ORDER BY 
             -- Proximity to accepted minus proximity to rejected
-            CASE
-                WHEN is_even THEN (-(a.embedding_personalitzat <=> accepted_embedding) + (a.embedding_personalitzat <=> rejected_embedding))
-                ELSE (-(a.embedding <=> accepted_embedding) + (a.embedding <=> rejected_embedding))
-            END DESC;
+            (-(a.embedding <=> accepted_embedding) + (a.embedding <=> rejected_embedding)) DESC;
     
     -- If we only have accepted activities:
     ELSIF accepted_embedding IS NOT NULL THEN
@@ -89,10 +70,7 @@ BEGIN
         WHERE 
             a.schedule_id = ANY(schedule_ids)
         ORDER BY 
-            CASE
-                WHEN is_even THEN a.embedding_personalitzat <=> accepted_embedding
-                ELSE a.embedding            <=> accepted_embedding
-            END ASC;
+            a.embedding <=> accepted_embedding ASC;
     
     -- If we only have rejected activities:
     ELSE
@@ -107,10 +85,7 @@ BEGIN
             a.schedule_id = ANY(schedule_ids) AND
             NOT (a.id = ANY(rejected_ids))
         ORDER BY 
-            CASE
-                WHEN is_even THEN a.embedding_personalitzat <=> rejected_embedding
-                ELSE a.embedding            <=> rejected_embedding
-            END DESC; -- Sort by dissimilarity to rejected
+            a.embedding <=> rejected_embedding DESC; -- Sort by dissimilarity to rejected
     END IF;
 END;
 $$;
