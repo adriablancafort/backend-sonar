@@ -69,13 +69,13 @@ def read_activities(quiz_id: int, request: ActivityRequest):
 
 
 @app.get("/swipes")
-def read_activities(quiz_id: int):
+def read_swipes(quiz_id: int):
     """Return personalized swipes list."""
     response = get_swipes(quiz_id)
     return response
 
 @app.post("/swipes")
-def write_activities(quiz_id: int, request: SwipeRequest):
+def write_swipes(quiz_id: int, request: SwipeRequest):
     """Write accepted and rejected swipes IDs to the database."""
     supabase.table("quizzes").update({
         "accepted_activities_ids": request.accepted_ids,
@@ -91,7 +91,7 @@ def read_results(quiz_id: int):
     return response
 
 @app.get("/recap")
-def read_personalized_tags(quiz_id: int):
+def read_recap(quiz_id: int):
     """Return the final personalized tags results."""
     response = get_recap(quiz_id)
     return response
