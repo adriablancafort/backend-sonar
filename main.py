@@ -52,9 +52,13 @@ def write_tags(quiz_id: int, request: TagRequest):
 
 
 @app.get("/activities")
-def read_activities():
-    """Return all activities list."""
-    response = supabase.table("activities").select("id,title,image_uri").execute()
+def read_activities(quiz_id: int):
+    """Return activities filtered by quiz's selected schedules."""
+    response = supabase.table("quizzes").select("schedule_ids").eq("id", quiz_id).single().execute()
+    
+    schedule_ids = [int(id_str) for id_str in response.data["schedule_ids"].strip("[]").split(",") if id_str.strip()]
+
+    response = supabase.table("activities").select("id,title,image_uri").in_("schedule_id", schedule_ids).execute()
     return response.data
 
 @app.post("/activities")
