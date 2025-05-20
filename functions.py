@@ -49,92 +49,48 @@ def get_results(quiz_id: int):
 def get_personalized_tags(quiz_id: int):
     """Return the final personalized tags results."""
 
-    results = supabase.rpc(
+    # Fetch raw tag distances from Supabase
+    response = supabase.rpc(
         "validation_get_tag_distances_by_user_preferences",
-        {
-            "input_quiz_id": quiz_id,
-        }
+        {"input_quiz_id": quiz_id}
     ).execute()
 
-    ids_with_distances = personalized_tags(results.data)
+    data = response.data
+    if not data or len(data) < 250:
+        return []
 
-    ordered_ids = [id for id, _ in ids_with_distances]
-    ids_order = {id: i for i, (id, _) in enumerate(ids_with_distances)}
-    id_to_percentatge = {id: round(percentatge, 2) for id, percentatge in ids_with_distances}
-
-    results = supabase.table("all_tags").select("id,title,frase").in_("id", ordered_ids).execute()
-
-    enriched = []
-    for item in results.data:
-        item["percentage"] = id_to_percentatge[item["id"]]
-        enriched.append(item)
-
-    enriched = sorted(enriched, key=lambda item: ids_order[item["id"]])
-
-    return enriched
-
-
-
-def personalized_tags(input: list[dict]) -> list[tuple[int]]:
-    """
-    Given a list of ids and distances, sorted by priority 
-    descendingly, returns three random tags and their matching
-    percentages. 
-
-    Running time: O(1)
-
-    Params:
-        input: list of tuples (id, distance). Each tuple must have the fields
-                "id" (int), "distance" (float)
-    
-    Returns:
-        list: list of tuples (id, distance). Each tuple must have the fields
-                "id" (int), "distance" (float)
-    """
-
-    first = random.randint(0, 10)
-    first_tag, first_percentage = input[first]["tag_id"], (1-(input[first]["distance"]/input[-1]["distance"]))*100
-
-    second = random.randint(60, 140)
-    second_tag, second_percentage = input[second]["tag_id"], (1-(input[second]["distance"]/input[-1]["distance"]))*100
-
-    third = random.randint(180, 250)
-    third_tag, third_percentage = input[third]["tag_id"], (1-(input[third]["distance"]/input[-1]["distance"]))*100
-
-    return [
-        (first_tag, first_percentage),
-        (second_tag, second_percentage),
-        (third_tag, third_percentage)
+    # Pick 3 tags with custom random logic
+    last_distance = data[-1]["distance"]
+    selected = [
+        (data[random.randint(0, 10)]["tag_id"], (1 - (data[random.randint(0, 10)]["distance"] / last_distance)) * 100),
+        (data[random.randint(60, 140)]["tag_id"], (1 - (data[random.randint(60, 140)]["distance"] / last_distance)) * 100),
+        (data[random.randint(180, 250)]["tag_id"], (1 - (data[random.randint(180, 250)]["distance"] / last_distance)) * 100)
     ]
 
+    # Structure IDs, ordering, and percentage mapping
+    ordered_ids = [tag_id for tag_id, _ in selected]
+    ids_order = {tag_id: i for i, (tag_id, _) in enumerate(selected)}
+    id_to_percentage = {tag_id: round(p, 2) for tag_id, p in selected}
 
-def time_to_minutes(t: time) -> int:
-    """
-    Converts time to minutes.
-    """
-    t = datetime.strptime(t, "%H:%M:%S").time()
-    if t.hour < 8:   #Because Sónar Night has activities before and past 24h, 8h is the middle bewtween start of Sònar Day and end of Sònar Night
-        return t.hour + 24 + t.minute + 24 * 60
-    return t.hour * 60 + t.minute
+    # Fetch tag details
+    tags_response = supabase.table("all_tags").select("id,title,frase").in_("id", ordered_ids).execute()
+
+    # Enrich and sort
+    enriched = []
+    for tag in tags_response.data:
+        tag["percentage"] = id_to_percentage[tag["id"]]
+        enriched.append(tag)
+
+    results = sorted(enriched, key=lambda t: ids_order[t["id"]])
+    return results
+
 
 def optimum_timetable(input: list[dict]) -> list[int]:
+    """Given a list of activities sorted by priority descendingly, finds a maximal length scheduling so 
+    that no activity is chosen unless its choosing doesn't impede a higher priority activity from being selected.
     """
-    Given a list of activities sorted by priority
-    descendingly, finds a maximal length scheduling so 
-    that no activity is chosen unless its choosing 
-    doesn't impede a higher priority activity from being selected.
 
-    Running time: O(n·log(n))
-
-    Params:
-        input: list of activities. Each activity must have the fields
-                "id" (int), schedule_id (int), "start_time" (str, e.g '17:00:00') 
-                and "end_time" (str)
-    
-    Returns:
-        list: ids of the selected activities
-    """
-    trees = defaultdict(IntervalTree)  # IntervalTree per cada schedule_id
+    trees = defaultdict(IntervalTree)  # One IntervalTree per schedule_id
 
     for act in input:
         start = time_to_minutes(act["start_time"])
@@ -143,12 +99,22 @@ def optimum_timetable(input: list[dict]) -> list[int]:
         tree = trees[act["schedule_id"]]
         if not tree.overlaps(start, end):
             tree[start:end] = act["id"]
-    
-    trees = dict(sorted(trees.items()))     #beacuse input is not sorted by schedule_id
-    
-    ordered_ids = []
-    for tree in trees.values():  # o simplement: for tree in trees.values() si l'ordre dels schedules no importa
-        intervals = sorted(tree, key=lambda i: i.begin)
-        ordered_ids += [i.data for i in intervals]
 
-    return ordered_ids
+    # Sort schedules by ID (optional unless ordering matters)
+    trees = dict(sorted(trees.items()))
+
+    selected_ids = []
+    for tree in trees.values():
+        intervals = sorted(tree, key=lambda i: i.begin)
+        selected_ids.extend(i.data for i in intervals)
+
+    return selected_ids
+
+
+def time_to_minutes(t: time) -> int:
+    """Converts time to minutes."""
+
+    t = datetime.strptime(t, "%H:%M:%S").time()
+    if t.hour < 8: # Because Sónar Night has activities before and past 24h, 8h is the middle bewtween start of Sònar Day and end of Sònar Night
+        return t.hour + 24 + t.minute + 24 * 60
+    return t.hour * 60 + t.minute
