@@ -38,12 +38,11 @@ def get_results(quiz_id: int):
 
     ids = optimum_timetable(results.data)
     
+    activities = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,tags,dominant_color,dark_color,pastel_color,activity_uri,schedules(title)").in_("id", ids).execute()
+
     # Sort results by the order of ids
     ids_order = {id: i for i, id in enumerate(ids)}
-    results = sorted(results.data, key=lambda item: ids_order[item["id"]])
-    
-    results = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,tags,dominant_color,dark_color,pastel_color,activity_uri,schedules(title)").in_("id", ids).execute()
-
+    results = sorted(activities.data, key=lambda item: ids_order[item["id"]])
     return results
 
 
