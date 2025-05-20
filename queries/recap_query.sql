@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION validation_get_tag_distances_by_user_preferences(input_quiz_id INTEGER)
+CREATE OR REPLACE FUNCTION recap_query(input_quiz_id INTEGER)
 RETURNS TABLE(tag_id INTEGER, distance DOUBLE PRECISION)
 LANGUAGE plpgsql
 AS $$
@@ -13,7 +13,7 @@ BEGIN
     -- Determine if input_quiz_id is even
     is_even := (input_quiz_id % 2 = 0);
 
-    -- Obtenir vectors d'activitats del qüestionari
+    -- Get activity vectors from the quiz
     SELECT 
         string_to_array(trim(both '[]' from q.accepted_activities_ids), ',')::INTEGER[],
         string_to_array(trim(both '[]' from q.rejected_activities_ids), ',')::INTEGER[],
@@ -29,7 +29,7 @@ BEGIN
         RAISE EXCEPTION 'Quiz with ID % not found', input_quiz_id;
     END IF;
 
-    -- Calcular embedding mitjà d'activitats acceptades
+    -- Calculate average embedding of accepted activities
     IF array_length(accepted_ids, 1) > 0 THEN
         IF is_even THEN
             SELECT AVG(a.embedding_personalitzat) INTO accepted_embedding
@@ -42,7 +42,7 @@ BEGIN
         END IF;
     END IF;
 
-    -- Calcular embedding mitjà d'activitats rebutjades
+    -- Calculate average embedding of rejected activities
     IF array_length(rejected_ids, 1) > 0 THEN
         IF is_even THEN
             SELECT AVG(a.embedding_personalitzat) INTO rejected_embedding
@@ -55,7 +55,7 @@ BEGIN
         END IF;
     END IF;
 
-    -- Cas 1: tenim acceptats i rebutjats
+    -- Case 1: we have accepted and rejected
     IF accepted_embedding IS NOT NULL AND rejected_embedding IS NOT NULL THEN
         RETURN QUERY
         SELECT 
@@ -67,7 +67,7 @@ BEGIN
         FROM all_tags t
         ORDER BY distance ASC;
 
-    -- Cas 2: només acceptats
+    -- Case 2: only accepted
     ELSIF accepted_embedding IS NOT NULL THEN
         RETURN QUERY
         SELECT 
@@ -79,7 +79,7 @@ BEGIN
         FROM all_tags t
         ORDER BY distance ASC;
 
-    -- Cas 3: només rebutjats
+    -- Case 3: only rejected
     ELSE
         RETURN QUERY
         SELECT 
@@ -89,7 +89,7 @@ BEGIN
                 ELSE         l2_distance(t.embedding, rejected_embedding)
             END AS distance
         FROM all_tags t
-        ORDER BY distance DESC;  -- més lluny dels rebutjats = millor
+        ORDER BY distance DESC;  -- further from rejected = better
     END IF;
 END;
 $$;

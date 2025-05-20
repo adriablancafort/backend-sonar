@@ -10,7 +10,7 @@ def get_swipes(quiz_id: int, return_count: int = 8, match_count: int = 20):
     match_count = max(return_count, match_count)
 
     results = supabase.rpc(
-        "validation_get_matching_activities_by_quiz_tags",
+        "swipes_query",
         {
             "input_quiz_id": quiz_id,
             "match_count": match_count
@@ -30,7 +30,7 @@ def get_results(quiz_id: int):
     """Return the final personalized schedule results."""
     
     results = supabase.rpc(
-        "validation_get_activities_by_user_preferences",
+        "results_query",
         {
             "input_quiz_id": quiz_id,
         }
@@ -46,12 +46,12 @@ def get_results(quiz_id: int):
     return results
 
 
-def get_personalized_tags(quiz_id: int):
+def get_recap(quiz_id: int):
     """Return the final personalized tags results."""
 
     # Fetch raw tag distances from Supabase
     response = supabase.rpc(
-        "validation_get_tag_distances_by_user_preferences",
+        "recap_query",
         {"input_quiz_id": quiz_id}
     ).execute()
 

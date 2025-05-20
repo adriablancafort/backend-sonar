@@ -1,6 +1,6 @@
 from database import supabase
 from models import ScheduleRequest, TagRequest, ActivityRequest, SwipeRequest
-from functions import get_swipes, get_results, get_personalized_tags
+from functions import get_swipes, get_results, get_recap
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -93,5 +93,5 @@ def read_results(quiz_id: int):
 @app.get("/recap")
 def read_personalized_tags(quiz_id: int):
     """Return the final personalized tags results."""
-    response = get_personalized_tags(quiz_id)
+    response = get_recap(quiz_id)
     return response

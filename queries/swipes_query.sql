@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION validation_get_matching_activities_by_quiz_tags(input_quiz_id INTEGER, match_count INTEGER)
+CREATE OR REPLACE FUNCTION swipes_query(input_quiz_id INTEGER, match_count INTEGER)
 RETURNS TABLE (id INTEGER, title TEXT, description TEXT, video_uri TEXT, tags TEXT[])
 LANGUAGE plpgsql
 AS $$
