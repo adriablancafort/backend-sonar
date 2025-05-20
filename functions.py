@@ -87,10 +87,9 @@ def get_personalized_tags(quiz_id: int):
 
 def optimum_timetable(input: list[dict]) -> list[int]:
     """Given a list of activities sorted by priority descendingly, finds a maximal length scheduling so 
-    that no activity is chosen unless its choosing doesn't impede a higher priority activity from being selected.
-    """
+    that no activity is chosen unless its choosing doesn't impede a higher priority activity from being selected."""
 
-    trees = defaultdict(IntervalTree)  # One IntervalTree per schedule_id
+    trees = defaultdict(IntervalTree) # One IntervalTree per schedule_id
 
     for act in input:
         start = time_to_minutes(act["start_time"])
