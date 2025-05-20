@@ -5,4 +5,3 @@ pydantic
 supabase
 openai
 intervaltree
-numpy

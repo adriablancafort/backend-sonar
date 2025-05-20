@@ -3,9 +3,8 @@ from datetime import time, datetime
 from intervaltree import IntervalTree
 from collections import defaultdict
 import random
-import numpy as np
 
-def get_swipes(quiz_id: int, return_count: int = 6, match_count: int = 20, roulette=False):
+def get_swipes(quiz_id: int, return_count: int = 8, match_count: int = 20):
     """Return personalized activities swipes list based on tag embeddings similarity."""
 
     match_count = max(return_count, match_count)
@@ -18,39 +17,13 @@ def get_swipes(quiz_id: int, return_count: int = 6, match_count: int = 20, roule
         }
     ).execute().data
 
-    if roulette:
-        # roulette random selection
+    # Return random selection of activities of length return_count
+    selected = random.sample(range(len(results)), return_count)
+    selected.sort()
+    selected = [results[idx]["id"] for idx in selected]
 
-        indexes = np.array(range(len(results)))
-        weights = np.array(range(len(results), 0, -1))
-
-        selected = []
-
-        for _ in range(return_count):
-            prob = weights / weights.sum()
-            
-            idx = np.random.choice(len(indexes), p=prob)
-            selected.append(indexes[idx])
-
-            indexes = np.delete(indexes, idx)
-            weights = np.delete(weights, idx)
-        
-        selected.sort()
-        selected = [results[idx]["id"] for idx in selected]
-
-        results = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,video_uri,tags,activity_uri,dominant_color,dark_color,pastel_color,schedules(title)").in_("id", selected).execute()
-
-        return results.data
-    else:
-        # uniform random selection
-        selected = random.sample(range(len(results)), return_count)
-        
-        selected.sort()
-        selected = [results[idx]["id"] for idx in selected]
-
-        results = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,video_uri,tags,activity_uri,dominant_color,dark_color,pastel_color,schedules(title)").in_("id", selected).execute()
-
-        return results.data
+    results = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,video_uri,tags,activity_uri,dominant_color,dark_color,pastel_color,schedules(title)").in_("id", selected).execute()
+    return results.data
 
 
 def get_results(quiz_id: int):
