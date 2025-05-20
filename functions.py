@@ -52,7 +52,9 @@ def get_recap(quiz_id: int):
     # Fetch raw tag distances from Supabase
     response = supabase.rpc(
         "recap_query",
-        {"input_quiz_id": quiz_id}
+        {
+            "input_quiz_id": quiz_id
+        }
     ).execute()
 
     data = response.data
