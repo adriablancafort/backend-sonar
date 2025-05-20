@@ -74,7 +74,7 @@ def get_results(quiz_id: int):
     return results
 
 
-def activities_final_tags(quiz_id: int):
+def get_personalized_tags(quiz_id: int):
     """Return the final personalized tags results."""
 
     results = supabase.rpc(
@@ -103,7 +103,7 @@ def activities_final_tags(quiz_id: int):
 
 
 
-def get_personalized_tags(input: list[dict]) -> list[tuple[int]]:
+def personalized_tags(input: list[dict]) -> list[tuple[int]]:
     """
     Given a list of ids and distances, sorted by priority 
     descendingly, returns three random tags and their matching
