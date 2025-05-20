@@ -16,11 +16,11 @@ def get_swipes(quiz_id: int, return_count: int = 8, match_count: int = 20):
     ).execute().data
 
     # Return random selection of activities of length return_count
-    selected = random.sample(range(len(response)), return_count)
-    selected.sort()
-    selected = [results[idx]["id"] for idx in selected]
+    selected_indices = random.sample(range(len(response)), return_count)
+    selected_indices.sort()
+    selected_ids = [response[idx]["id"] for idx in selected_indices]
 
-    results = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,video_uri,tags,activity_uri,dominant_color,dark_color,pastel_color,schedules(title)").in_("id", selected).execute()
+    results = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,video_uri,tags,activity_uri,dominant_color,dark_color,pastel_color,schedules(title)").in_("id", selected_ids).execute()
     return results.data
 
 
