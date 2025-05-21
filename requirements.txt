@@ -6,4 +6,5 @@ supabase
 openai
 intervaltree
 numpy
-
+waesyprint
+Jinja2

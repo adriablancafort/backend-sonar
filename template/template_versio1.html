@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <title>Resultats d’Activitats</title>
+  <style>
+    /* 1) Pàgina A4 sense marges */
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    /* 2) Reset i font */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      position: relative;
+      width: 100%; height: 100%;
+    }
+
+    /* 3) Background com <img> absolut */
+    .background-img {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      z-index: -2;
+    }
+    /* Overlay opcional */
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
+      z-index: -1;
+    }
+
+    /* 4) Contenidor cartes: cap padding extern per evitar marges */
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      padding: 1cm 1cm;
+    }
+
+    /* 5) Card estil: ample complet del contenidor */
+    .card {
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(20,20,20,0.8);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      backdrop-filter: blur(20px);
+      width: 100%;
+      page-break-inside: avoid;
+    }
+    /* Trenca pàgina després de cada dues cartes */
+    .card:nth-of-type(2n) {
+      page-break-after: always;
+    }
+
+    /* 6) Imatge més petita */
+    .card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* 7) Contingut i títol */
+    .card-content {
+      padding: 1.5rem;
+      color: #fff;
+    }
+    .card-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    /* 8) Badges amb fons gris més opaque */
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+      background: rgba(255,255,255,0.4);
+    }
+
+    /* 9) Descripció */
+    .description {
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      line-height: 1.5;
+      color: #fff;
+    }
+
+    /* 10) Tags: gris clar sense dupli */
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+      background: rgba(255,255,255,0.4);
+    }
+  </style>
+</head>
+<body>
+  <!-- Fons com a img absolut -->
+  <img class="background-img" src="file://{{ background_uri }}" alt="">
+  <div class="overlay"></div>
+
+  <div class="container">
+    {% for act in activities %}
+      <div class="card">
+        <img src="{{ act.image_uri }}" alt="{{ act.title }}">
+        <div class="card-content">
+          <div class="card-title">{{ act.title }}</div>
+          <div class="badge-row">
+            {% if act.time_info %}<span class="badge">⏰ {{ act.time_info }}</span>{% endif %}
+            {% if act.schedule %}<span class="badge">📅 {{ act.schedule }}</span>{% endif %}
+            {% if act.day_dots %}<span class="badge">{{ act.day_dots|join(' ') }}</span>{% endif %}
+            {% if act.time_icon %}<span class="badge">{{ '🌙' if act.time_icon=='moon' else '☀️' }}</span>{% endif %}
+          </div>
+          <div class="description">{{ act.description }}</div>
+          <div class="tags">
+            {% for tag in act.tags %}
+              <span class="tag">{{ tag }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</body>
+</html>

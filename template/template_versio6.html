@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Meta and Fonts -->
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&text=calendar_today%7Cschedule%7Cbrightness_5%7Cdark_mode%7Cinfo" />
+  
+  <!-- CSS Styles -->
+  <style>
+    /* Font Imports */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    /* Base Styles */
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      color: white;
+    }
+
+    /* Layout Containers */
+    .page-container {
+      width: 100%;
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+      background-image: url('{{ background_uri }}');
+      background-attachment: fixed;
+    }
+    
+    .content {
+      position: relative;
+      z-index: 2;
+      padding: 40px;
+      padding-top: 0px;
+    }
+
+    /* Cover Pages */
+    .day-cover-page {
+      position: absolute;       /* Permet posicionament exacte */
+      top: 0;                   /* Alineat a la part superior */
+      left: 0;                  /* Alineat al cantó esquerre */
+      width: 100%;              /* Amplada completa */
+      height: 100vh;            /* Alçada completa de viewport */
+      background-size: cover;   /* Cobrir tot l'espai */
+      background-position: 0 0; /* Alineat a l'esquerra-superior */
+      background-repeat: no-repeat;
+      page-break-after: always; /* Salt de pàgina en PDF */
+      margin: 0 !important;     /* Elimina qualsevol marge */
+      padding: 0 !important;    /* Elimina qualsevol padding */
+      border: none !important;  /* Elimina vores si n'hi ha */
+      
+      /* Per a impressió DIN A4 */
+      height: 29.7cm;
+      width: 21cm;
+    }
+
+    .cover-page {
+      height: 100vh;
+      background-image: url('{{ background_header_uri }}');
+      background-size: cover;
+      background-position: center;
+      page-break-after: always;
+      height: 29.7cm;
+      width: 21cm;
+      margin: 0;
+      padding: 0;
+      display: block;
+    }
+
+    /* Card Layout */
+    .cards-container {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .card-page {
+      min-height: calc(100vh - 80px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-after: always;
+      padding-top: 60px;
+    }
+
+    /* Card Components */
+    .card {
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      break-inside: avoid;
+      margin-bottom: 30px;
+    }
+
+    .card-glow {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 16px;
+      box-shadow: 0 0 15px var(--dominant-color);
+      opacity: 0.7;
+      z-index: 1;
+    }
+
+    .card-content {
+      background-color: var(--dark-color-80);
+      border: 2px solid var(--dominant-color-40);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+    }
+
+    /* Card Content Elements */
+    .card-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .card-body {
+      padding: 16px;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: white;
+    }
+
+    /* Badges and Indicators */
+    .badges-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .time-badges {
+      display: flex;
+      gap: 10px;
+    }
+
+    .badge {
+      display: flex;
+      align-items: center;
+      padding: 2px 12px; 
+      border-radius: 20px;
+      font-size: 14px; 
+      font-weight: 600; 
+      background-color: var(--dominant-color-80);
+      color: white;
+      white-space: nowrap;
+      height: auto;
+      border: 2px solid var(--dominant-color-40);
+    }
+
+    .day-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 30px;
+    }
+
+    /* Text and Tags */
+    .card-description {
+      font-size: 15px;
+      line-height: 22px;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 16px;
+    }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+      margin-bottom: 12px;
+    }
+
+    .tag {
+      display: flex;
+      align-items:center;
+      padding: 2px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      background-color: var(--dominant-color-80);
+      color: white;
+      white-space: nowrap;
+      height: auto;
+      border: 2px solid var(--dominant-color-40);
+    }
+
+    /* Buttons */
+    .more-info-btn {
+      display: inline-flex;       
+      align-items: center;
+      padding: 2px 12px;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      background-color: var(--dominant-color);
+      color: white;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 12px;
+      white-space: nowrap;
+      width: auto;               
+      justify-content: center;   
+      border: 2px solid var(--dominant-color-40); 
+    }
+
+    /* Print Settings */
+    @page {
+      size: A4;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Main Container -->
+  <div class="page-container">
+    <!-- Cover Page -->
+    <div class="cover-page"></div>
+    
+    <!-- Content Area -->
+    <div class="content">
+      <!-- Group Activities by Day -->
+      {% set grouped_activities = {} %}
+      {% for activity in activities %}
+          {% set day = activity.schedules.title %}
+          {% if day not in grouped_activities %}
+              {% set _ = grouped_activities.update({day: []}) %}
+          {% endif %}
+          {% set _ = grouped_activities[day].append(activity) %}
+      {% endfor %}
+  
+      <!-- Day Sections -->
+      {% for day, day_activities in grouped_activities.items() %}
+          <!-- Day Cover Page -->
+          <div class="day-cover-page" style="background-image: url('{{ images_days_uris[day] }}'); page-break-after: always;"></div>
+  
+          <!-- Activity Cards -->
+          {% for i in range(0, day_activities|length, 2) %}
+              <div class="card-page {% if loop.index > 1 %}even-page{% endif %}">
+                  {% for activity in day_activities[i:i+2] %}
+                  <div class="card" 
+                          style="--dominant-color: {{ activity.dominant_color }};
+                                  --dominant-color-40: {{ activity.dominant_color }}40;
+                                  --dominant-color-80: {{ activity.dominant_color }}CC;
+                                  --dark-color: {{ activity.dark_color }};
+                                  --dark-color-80: {{ activity.dark_color }}CC;
+                                  --pastel-color: {{ activity.pastel_color }};">
+                      <!-- Card Glow Effect -->
+                      <div class="card-glow"></div>
+                  
+                      <!-- Card Content -->
+                      <div class="card-content">
+                          <img src="{{ activity.image_uri }}" class="card-image" alt="{{ activity.title }}">
+                          
+                          <div class="card-body">
+                              <h2 class="card-title">{{ activity.title }}</h2>
+                              
+                              <!-- Badges Section -->
+                              <div class="badges-container">
+                                  <div class="time-badges">
+                                      <div class="badge">
+                                          <i><span class="material-symbols-outlined">schedule</span></i>
+                                          <span>{{ activity.start_time[:5] }} - {{ activity.end_time[:5] }}</span>
+                                      </div>
+                                      <div class="badge">
+                                          <i><span class="material-symbols-outlined">calendar_today</span></i>
+                                          <span>{{ activity.schedules.title }}</span>
+                                      </div>
+                                  </div>
+                                  
+                                  <div class="day-indicator">
+                                      <div class="dots-container">
+                                          <span class="dots">{{ activity.day_dots[0] }}{{ activity.day_dots[1] }}{{ activity.day_dots[2] }}</span>
+                                      </div>
+                                      <div class="time-icon-container">
+                                          {% if activity.time_icon == 'moon' %}
+                                          <span class="material-symbols-outlined">dark_mode</span>
+                                          {% else %}
+                                          <span class="material-symbols-outlined">brightness_5</span>
+                                          {% endif %}
+                                      </div>
+                                  </div>   
+                              </div>
+                          
+                              <!-- Description -->
+                              <p class="card-description">{{ activity.description }}</p>
+                              
+                              <!-- Tags -->
+                              <div class="tags-container">
+                                  {% for tag in activity.tags %}
+                                  <span class="tag">{{ tag }}</span>
+                                  {% endfor %}
+                              </div>
+                              
+                              <!-- Action Button -->
+                              <a href="{{ activity.activity_uri }}" class="more-info-btn" target="_blank">
+                                  <i><span class="material-symbols-outlined">info</span></i>
+                                  <span>Click here for more info</span>
+                              </a>
+                          </div>
+                      </div>
+                  </div>
+                  {% endfor %}
+              </div>
+          {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+</body>
+</html>
