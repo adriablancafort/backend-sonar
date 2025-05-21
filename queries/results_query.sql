@@ -12,10 +12,10 @@ DECLARE
 BEGIN
     -- Get the accepted_activities_ids, rejected_activities_ids, schedule_ids, and essential_activities_ids from the quiz
     SELECT 
-        COALESCE(string_to_array(trim(both '[]' from q.accepted_activities_ids), ',')::INTEGER[], ARRAY[]::INTEGER[]),
-        COALESCE(string_to_array(trim(both '[]' from q.rejected_activities_ids), ',')::INTEGER[], ARRAY[]::INTEGER[]),
-        COALESCE(string_to_array(trim(both '[]' from q.schedule_ids), ',')::INTEGER[], ARRAY[]::INTEGER[]),
-        COALESCE(string_to_array(trim(both '[]' from q.essential_activities_ids), ',')::INTEGER[], ARRAY[]::INTEGER[])
+        string_to_array(trim(both '[]' from q.accepted_activities_ids), ',')::INTEGER[],
+        string_to_array(trim(both '[]' from q.rejected_activities_ids), ',')::INTEGER[],
+        string_to_array(trim(both '[]' from q.schedule_ids), ',')::INTEGER[],
+        string_to_array(trim(both '[]' from q.essential_activities_ids), ',')::INTEGER[]
     INTO 
         accepted_ids,
         rejected_ids,
