@@ -84,14 +84,15 @@ def write_swipes(quiz_id: int, request: SwipeRequest):
     return {"status": "success"}
 
 
+@app.get("/recap")
+def read_recap(quiz_id: int):
+    """Return the personalized tags results."""
+    response = get_recap(quiz_id)
+    return response
+
+
 @app.get("/results")
 def read_results(quiz_id: int):
     """Return the final personalized schedule results."""
     response = get_results(quiz_id)
-    return response
-
-@app.get("/recap")
-def read_recap(quiz_id: int):
-    """Return the final personalized tags results."""
-    response = get_recap(quiz_id)
     return response
