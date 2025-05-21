@@ -67,8 +67,7 @@ print("Template rendered in seconds: ", end3-end2)
 print("Generating PDF...")
 
 
-HTML(string=html_out, base_url=os.getcwd()) \
-    .write_pdf("results_test.pdf")
+HTML(string=html_out, base_url=os.getcwd()).write_pdf("results_test.pdf")
 end4=time.time()
 print("PDF generated in seconds: ", end4-end3)
 print("Total time in seconds: ", end4-start)
