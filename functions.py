@@ -5,7 +5,6 @@ from collections import defaultdict
 import random
 
 def get_swipes(quiz_id: int, return_count: int = 8, match_count: int = 20):
-
     """Return personalized activities swipes list based on tag embeddings similarity."""
 
     response = supabase.rpc(
@@ -17,6 +16,9 @@ def get_swipes(quiz_id: int, return_count: int = 8, match_count: int = 20):
     ).execute().data
 
     # Return random selection of activities of length return_count
+    selected_indices = random.sample(range(len(response)), return_count)
+    selected_indices.sort()
+    ids = [response[idx]["id"] for idx in selected_indices]
 
     results = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,video_uri,tags,activity_uri,dominant_color,dark_color,pastel_color,schedules(title)").in_("id", ids).execute()
     return results.data
