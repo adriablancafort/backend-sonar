@@ -24,31 +24,6 @@ def get_swipes(quiz_id: int, return_count: int = 8, match_count: int = 20):
     return results.data
 
 
-def get_results(quiz_id: int):
-    """Return the final personalized schedule results."""
-    
-    response = supabase.rpc(
-        "results_query",
-        {
-            "input_quiz_id": quiz_id,
-        }
-    ).execute()
-
-    ids = optimum_timetable(response.data)
-
-    # Store results ids
-    supabase.table("quizzes").update({
-        "results_ids": ids
-    }).eq("id", quiz_id).execute()
-
-    activities = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,tags,dominant_color,dark_color,pastel_color,activity_uri,schedules(title)").in_("id", ids).execute()
-
-    # Sort results by the order of ids
-    ids_order = {id: i for i, id in enumerate(ids)}
-    results = sorted(activities.data, key=lambda item: ids_order[item["id"]])
-    return results
-
-
 def get_recap(quiz_id: int):
     """Return the final personalized tags results."""
 
@@ -82,6 +57,31 @@ def get_recap(quiz_id: int):
         enriched.append(tag)
 
     results = sorted(enriched, key=lambda t: ids_order[t["id"]])
+    return results
+
+
+def get_results(quiz_id: int):
+    """Return the final personalized schedule results."""
+    
+    response = supabase.rpc(
+        "results_query",
+        {
+            "input_quiz_id": quiz_id,
+        }
+    ).execute()
+
+    ids = optimum_timetable(response.data)
+
+    # Store results ids
+    supabase.table("quizzes").update({
+        "results_ids": ids
+    }).eq("id", quiz_id).execute()
+
+    activities = supabase.table("activities").select("id,title,description,image_uri,start_time,end_time,tags,dominant_color,dark_color,pastel_color,activity_uri,schedules(title)").in_("id", ids).execute()
+
+    # Sort results by the order of ids
+    ids_order = {id: i for i, id in enumerate(ids)}
+    results = sorted(activities.data, key=lambda item: ids_order[item["id"]])
     return results
 
 
