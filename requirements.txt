@@ -5,3 +5,5 @@ pydantic
 supabase
 openai
 intervaltree
+weasyprint
+Jinja2
