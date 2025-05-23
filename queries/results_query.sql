@@ -12,10 +12,14 @@ DECLARE
 BEGIN
     -- Get the accepted_activities_ids, rejected_activities_ids, schedule_ids, and essential_activities_ids from the quiz
     SELECT 
-        string_to_array(trim(both '[]' from q.accepted_activities_ids), ',')::INTEGER[],
-        string_to_array(trim(both '[]' from q.rejected_activities_ids), ',')::INTEGER[],
-        string_to_array(trim(both '[]' from q.schedule_ids), ',')::INTEGER[],
-        string_to_array(trim(both '[]' from q.essential_activities_ids), ',')::INTEGER[]
+        COALESCE( (CASE WHEN trim(both '[]' from q.accepted_activities_ids) = '' THEN ARRAY[]::INTEGER[] ELSE string_to_array(trim(both '[]' from q.accepted_activities_ids), ',')::INTEGER[] END), ARRAY[]::INTEGER[] ),
+        COALESCE( (CASE WHEN trim(both '[]' from q.rejected_activities_ids) = '' THEN ARRAY[]::INTEGER[] ELSE string_to_array(trim(both '[]' from q.rejected_activities_ids), ',')::INTEGER[] END), ARRAY[]::INTEGER[] ),
+        CASE
+            WHEN q.schedule_ids IS NULL THEN NULL::INTEGER[]
+            WHEN trim(both '[]' from q.schedule_ids) = '' THEN ARRAY[]::INTEGER[]
+            ELSE string_to_array(trim(both '[]' from q.schedule_ids), ',')::INTEGER[]
+        END,
+        COALESCE( (CASE WHEN trim(both '[]' from q.essential_activities_ids) = '' THEN ARRAY[]::INTEGER[] ELSE string_to_array(trim(both '[]' from q.essential_activities_ids), ',')::INTEGER[] END), ARRAY[]::INTEGER[] )
     INTO 
         accepted_ids,
         rejected_ids,
@@ -24,20 +28,20 @@ BEGIN
     FROM quizzes q
     WHERE q.id = input_quiz_id;
     
-    -- Check if quiz exists
-    IF schedule_ids IS NULL OR array_length(schedule_ids, 1) IS NULL THEN
+    -- Check if quiz exists or has valid schedule_ids
+    IF schedule_ids IS NULL OR cardinality(schedule_ids) = 0 THEN
         RAISE EXCEPTION 'Quiz with ID % not found or has no schedule_ids', input_quiz_id;
     END IF;
     
     -- Calculate average embedding of accepted activities (if any)
-    IF array_length(accepted_ids, 1) > 0 THEN
+    IF cardinality(accepted_ids) > 0 THEN
         SELECT AVG(a.embedding) INTO accepted_embedding
         FROM activities a
         WHERE a.id = ANY(accepted_ids);
     END IF;
     
     -- Calculate average embedding of rejected activities (if any)
-    IF array_length(rejected_ids, 1) > 0 THEN
+    IF cardinality(rejected_ids) > 0 THEN
         SELECT AVG(a.embedding) INTO rejected_embedding
         FROM activities a
         WHERE a.id = ANY(rejected_ids);
