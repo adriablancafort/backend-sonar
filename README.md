@@ -1,8 +1,10 @@
-# MySonar App Backend
+# MySonar API
 
-Discover new schedules in the Sonar festival by swiping through activities.
+**MySonar** is a Mobile Application designed to enhance the experience of Sónar Festival attendees through personalized schedule recommendations tailored to each user's musical tastes and attendance preferences.
 
 This is a FastAPI backend that provides API endpoints for the MySonar mobile application, featuring activity recommendations powered by AI embeddings.
+
+This repository contains the code of the Backend API. If you are interested in the frontend , check out the [Mobile App repository](https://github.com/adriablancafort/mysonar-app).
 
 ## Features
 
@@ -15,22 +17,33 @@ This is a FastAPI backend that provides API endpoints for the MySonar mobile app
 
 ### Prerequisites
 
-- Python (version 3.8 or higher)
-- pip (Python package installer)
+Make sure you have the following installed:
+
+- [Python](https://www.python.org/) (version 3.8 or higher)
+- [pip](https://pip.pypa.io/) (Python package installer)
 - Supabase account and project
 
-### Installation
+### Get Started
 
-1. Clone or download this repository
-2. Navigate to the project directory:
+1. Clone the repository
+
    ```bash
-   cd backend-sonar
+   git clone https://github.com/adriablancafort/mysonar-api.git
+   cd mysonar-api
    ```
-3. Install dependencies:
+
+2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-4. Set up your environment variables for Supabase connection
+
+3. Create a `.env` file in the project root with the following variables:
+   ```
+   SUPABASE_URL=your_supabase_url_here
+   SUPABASE_KEY=your_supabase_service_role_key_here
+   
+   OPENAI_API_KEY=your_openai_api_key_here
+   ```
 
 ### Development
 
