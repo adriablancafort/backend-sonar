@@ -40,7 +40,10 @@ BEGIN
             ELSE array(SELECT jsonb_array_elements_text(to_jsonb(a.tags)))
         END
     FROM activities a
-    WHERE a.schedule_id = ANY(schedule_ids) AND a.video_uri IS NOT NULL
+    WHERE a.schedule_id = ANY(schedule_ids) 
+        AND a.video_uri IS NOT NULL 
+        AND TRIM(a.video_uri) != '' 
+        AND LENGTH(TRIM(a.video_uri)) > 0
     ORDER BY a.embedding <=> combined_embedding
     LIMIT match_count;
 END;
