@@ -4,7 +4,7 @@
 
 This is a FastAPI backend that provides API endpoints for the MySonar mobile application, featuring activity recommendations powered by AI embeddings.
 
-This repository only contains the code of the Backend API. If you are interested in the frontend , check out the [Mobile App repository](https://github.com/adriablancafort/mysonar-app).
+This repository only contains the code of the Backend API. If you are interested in the frontend, check out the [Mobile App repository](https://github.com/adriablancafort/mysonar-app).
 
 ## Features
 
